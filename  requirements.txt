@@ -1,0 +1,5 @@
+requests
+beautifulsoup4
+streamlit-pydantic
+pydantic==1.10.14
+
