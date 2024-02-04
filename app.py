@@ -4,11 +4,12 @@ import pytz
 from datetime import datetime
 import time
 
+
 # List of time zones
 time_zones = list(pytz.all_timezones)
 
 # 设置侧边栏来选择页面
-page = st.sidebar.selectbox("Choose a page", ["World Clock", "Timestamp Converter"])
+page = st.sidebar.selectbox("Choose a page", ["World Clock", "Timestamp Converter", "Real-time Data"])
 
 if page == "World Clock":
     st.title("World Clock App")
@@ -29,6 +30,19 @@ if page == "World Clock":
             st.metric(label=zone, value=f"Local Time: {time_now}", delta=f"UNIX Timestamp: {unix_timestamp}")
     time.sleep(1)
     st.experimental_rerun()
+
+if page == "Real-time Data":
+    st.title("Real-time Data")
+
+    # 金融数据部分
+    st.header("Finance Data")
+    # 假设你已经有了一个API密钥
+    api_key = "YOUR_ALPHA_VANTAGE_API_KEY"
+    symbol = st.text_input("Enter stock symbol", value="AAPL")
+    if symbol:
+        data = requests.get(f"https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol={symbol}&interval=5min&apikey={api_key}").json()
+        # 解析并显示数据...
+
 
 elif page == "Timestamp Converter":
     st.title("Timestamp Converter")
