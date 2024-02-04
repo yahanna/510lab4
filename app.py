@@ -3,6 +3,8 @@ import streamlit as st
 import pytz
 from datetime import datetime
 import time
+import requests
+import sqlite3
 
 
 # List of time zones
@@ -34,16 +36,49 @@ if page == "World Clock":
 if page == "Real-time Data":
     st.title("Real-time Data")
 
-    # 金融数据部分
-    st.header("Finance Data")
-    # 假设你已经有了一个API密钥
-    api_key = "YOUR_ALPHA_VANTAGE_API_KEY"
-    symbol = st.text_input("Enter stock symbol", value="AAPL")
-    if symbol:
-        data = requests.get(f"https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol={symbol}&interval=5min&apikey={api_key}").json()
-        # 解析并显示数据...
+# 假设这个函数位于你的代码顶部或者作为一个独立的模块
+def get_latest_weather_data(city_name, country):
+    conn = sqlite3.connect('world.db')
+    cursor = conn.cursor()
+    
+    # 获取最新的天气数据
+    query = """
+    SELECT temperature, humidity, weather_description, timestamp
+    FROM weather_data
+    JOIN locations ON weather_data.location_id = locations.location_id
+    WHERE city_name = ? AND country = ? 
+    ORDER BY timestamp DESC
+    LIMIT 1;
+    """
+    cursor.execute(query, (city_name, country))
+    data = cursor.fetchone()
+    conn.close()
+    
+    return data
 
+if page == "Real-time Data":
+    st.title("Real-time Weather Data")
 
+    # 为天气数据部分提供单独的输入界面
+    st.header("Weather Data")
+    city_country_input = st.text_input("Enter location as 'City, Country' (e.g., 'London, UK')")
+
+    if st.button("Get Weather Data"):
+        if ", " in city_country_input:
+            city_name, country = city_country_input.split(", ", 1)
+            data = get_latest_weather_data(city_name, country.strip())
+            if data:
+                temperature, humidity, weather_description, timestamp = data
+                st.subheader(f"Weather in {city_name}, {country}:")
+                st.write(f"Temperature: {temperature}°C")
+                st.write(f"Humidity: {humidity}%")
+                st.write(f"Description: {weather_description}")
+                st.write(f"Last Updated: {timestamp}")
+            else:
+                st.write(f"No weather data available for {city_name}, {country}.")
+        else:
+            st.error("Invalid location format. Please use 'City, Country' format.")
+    
 elif page == "Timestamp Converter":
     st.title("Timestamp Converter")
 
